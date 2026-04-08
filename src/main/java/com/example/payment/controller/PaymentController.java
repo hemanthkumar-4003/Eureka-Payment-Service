@@ -1,5 +1,7 @@
-package com.example.payment;
+package com.example.payment.controller;
 
+import com.example.payment.requests.PaymentRequest;
+import com.example.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

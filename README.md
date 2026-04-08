@@ -7,6 +7,9 @@ A Spring Boot microservice for processing payments, registered with a Eureka dis
 - Java 17
 - Spring Boot 3.2.5
 - Spring Cloud Netflix Eureka Client
+- Spring Data Redis (Lettuce)
+- Spring Cache
+- Jackson Databind
 - Lombok
 
 ## Configuration
@@ -16,6 +19,31 @@ A Spring Boot microservice for processing payments, registered with a Eureka dis
 | Port | `8082` |
 | App Name | `payment-service` |
 | Eureka Server | `http://localhost:8008/server/eureka/` |
+
+### Redis Configuration
+
+| Property | Value |
+|---|---|
+| Host | `localhost` |
+| Port | `6379` |
+| Cache Type | `redis` |
+| Cache Null Values | `false` |
+| SSL Enabled | `true` |
+| Cache TTL | `45 days` |
+| Serializer | `GenericJackson2JsonRedisSerializer` |
+
+Redis connection is managed via `LettuceConnectionFactory` with host and port bound from `spring.data.redis.*` properties using `RedisConfigProperties`.
+
+> To enable SSL (e.g. for AWS ElastiCache), uncomment `.useSsl()` in `RedisConfig.java`.
+
+## Caching Behavior
+
+| Operation | Annotation | Cache Key |
+|---|---|---|
+| `processPayment` | `@CachePut` | `orderId` |
+| `getPaymentByOrderId` | `@Cacheable` | `orderId` |
+
+Cache name: `paymentService`
 
 ## API Endpoints
 
@@ -53,7 +81,7 @@ GET /payments/{orderId}
   "status": "SUCCESS"
 }
 ```
-> Returns `status: NOT_FOUND` if no payment exists for the given `orderId`.
+> Returns `status: PAYMENT DETAILS NOT_FOUND` if no payment exists for the given `orderId`.
 
 ## Running the Service
 
@@ -61,4 +89,4 @@ GET /payments/{orderId}
 mvn spring-boot:run
 ```
 
-> Ensure the Eureka server is running at `http://localhost:8008` before starting this service.
+> Ensure the Eureka server is running at `http://localhost:8008` and Redis is available at `localhost:6379` before starting this service.
